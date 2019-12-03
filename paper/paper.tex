@@ -1,0 +1,56 @@
+\documentclass[twocolumn, a4j]{ltjsarticle}
+\usepackage{graphicx}
+\usepackage[colorlinks, linkcolor=blue, bookmarksnumbered]{hyperref}
+\usepackage{siunitx}
+\usepackage{amsmath}
+\usepackage[nameinlink]{cleveref}
+\usepackage[subrefformat=parens]{subcaption}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2cm, right=2cm]{geometry}
+
+\newcommand{\Cite}[1]{$^{\cref{#1}}$}
+
+\crefformat{section}{#2第#1章#3}
+\crefformat{subsection}{#2第#1節#3}
+\crefformat{enumi}{#2(#1)#3}
+\crefname{figure}{図}{図}
+\crefname{table}{表}{表}
+\crefname{equation}{式}{式}
+\newcommand{\crefrangeconjunction}{-}
+\newcommand{\crefrangepreconjunction}{}
+\newcommand{\crefrangepostconjunction}{}
+\newcommand{\crefpairconjunction}{、}
+\newcommand{\crefmiddleconjunction}{、}
+\newcommand{\creflastconjunction}{、}
+\newcommand{\crefpairgroupconjunction}{、}
+\newcommand{\crefmiddlegroupconjunction}{、}
+\newcommand{\creflastgroupconjunction}{、}
+
+\sisetup{inter-unit-product=\ensuremath{{}\cdot{}}}
+\newcommand{\SII}[2]{\SI{#1}{[#2]}}
+
+\title{粒子法FLOSSに対する妥当性確認試験 \\ Validation for Particle Method FLOSS}
+
+\author{吉藤尚生、大友広幸 \\
+	株式会社フィックスターズ \\
+	東京都品川区大崎1-11-1 \\
+	E-mail：yoshifuji@fixstars.com}
+
+\date{2019年10月28日（第33回数値流体力学シンポジウム向け原稿）}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We created three benchmark problems to validate FLOSS of the Particle Method.
+The targets were DualSPHysics and OpenMPS, which are mainly aim to apply in coastal and ocean engineering.
+The first benchmark, the Central Gravity problem, validates the hydrostatic pressure.
+It found that DualSPHysics is not able to solve the hydrostatic problem due to its density formulation.
+It also found that MPS-GC method causes nonphysical surface oscillation due to nonconservation of momentum.
+The second and third benchmarks are based on the Dambreak problem.
+They validate the time series of the surface shape, water depth, and pressure.
+The benchmark results showed that MPS-SPP is necessary to reduce the pressure fluctuation.
+We continue to develop and invoke verification and validation for Particle Method FLOSS.
+\end{abstract}
+
+\input{main.tex}
+\end{document}
