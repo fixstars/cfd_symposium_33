@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="ja">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>粒子法FLOSSに対する妥当性確認試験</title>
+
+		<meta name="description" content="粒子法FLOSSに対する妥当性確認試験（第33回数値流体力学シンポジウムE08-4）" />
+		<meta name="author" content="吉藤尚生" />
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/fixstars.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/monokai.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+
+		<style type="text/css">
+			strong
+			{
+				color: red;
+			}
+			figure
+			{
+				margin: auto;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="reveal">
+			<svg id="slide_number_background" style="position: absolute; top: 2px; right: 2px; width: 2.2em; z-index: 10;" viewBox="0 0 100 150">
+				<polygon
+					points="0,0 100,0 100,80 50,120 0,80"
+					fill="#0070c0" />
+			</svg>
+			<div class="slides">
+				<!-- タイトルページ -->
+				<section>
+					<h1>粒子法FLOSSに対する妥当性確認試験</h1>
+					<div id="attribution">
+						<p>株式会社フィックスターズ</p>
+						<p>ソリューション第二事業部</p>
+						<p>&#x20bb7;藤尚生*、大友広幸</p>
+					</div>
+					<time>2019-11-28</time>
+					<p id="locate"><a href="http://www2.nagare.or.jp/cfd/cfd33/">第33回数値流体力学シンポジウム</a></p>
+				</section>
+				
+				<!-- 以下に各スライドを記述してください -->
+				<section>
+					<h2>概要</h2>
+					<section>
+						<h3>中心重力問題</h3>
+						<figure style="width: 65%">
+							<video src="img/cental_hr.mp4" controls="1" loop="1" />
+						</figure>
+					</section>
+					<section>
+						<h3>水柱崩壊問題</h3>
+						<p>Zhou et al.(1999)の実験の再現</p>
+						<figure style="width: 100%">
+							<video src="img/zhouetal1999_spp.mp4" controls="1" loop="1" />
+						</figure>
+					</section>
+					<section>
+						<h3>妥当性確認の結果</h3>
+						<table>
+							<thead>
+								<tr><th /><th colspan="2">DualSPHysics</th><th colspan="2">OpenMps</th colspan="2"></tr>
+							</thead>
+							<tbody>
+								<tr><th style="white-space: nowrap">静水圧</th><td>×</td><td>水深増大・圧力低下</td><td>△</td><td>GC法により不自然な運動</td></tr>
+								<tr><th style="white-space: nowrap">水柱波速</th><td>-</td><td>（実施せず）</td><td>○</td><td>良好に一致</td></tr>
+								<tr><th style="white-space: nowrap">衝撃波圧</th><td>-</td><td>（実施せず）</td><td>△</td><td>SPP法なしでは強い擾乱</td></tr>
+							</tbody>
+						</table>
+					</section>
+
+					<section>
+						<h3>まとめ</h3>
+						<ul style="font-size: 150%">
+							<li>DualSPHysicsでは<br />静水圧問題が解けなかった</li>
+							<li>OpenMpsのGC法が不自然な<br />運動量生成をしていた</li>
+							<li>OpenMpsにSPP法を導入することで<br />圧力擾乱が抑制できた</li>
+						</ul>
+					</section>
+				</section>
+
+				<section id="toc">
+					<h3>目次</h3>
+					<ol class="toc">
+						<li>概要</li>
+						<li>背景・目的</li>
+						<li>計算手法</li>
+						<li>中心重力問題(DualSPHysics)</li>
+						<li>中心重力問題(OpenMps)</li>
+						<li>水柱崩壊問題：Oka&amp;Koshizuka(1996)</li>
+						<li>水柱崩壊問題：Zhou et al.(1999)</li>
+						<li>まとめ</li>
+					</ol>
+				</section>
+
+				<section>
+					<h2>背景・目的</h2>
+					<section>
+						<h3>目次</h3>
+						<ol class="toc">
+							<li>概要</li>
+							<li class="recent">背景・目的</li>
+							<li>計算手法</li>
+							<li>中心重力問題(DualSPHysics)</li>
+							<li>中心重力問題(OpenMps)</li>
+							<li>水柱崩壊問題：Oka&amp;Koshizuka(1996)</li>
+							<li>水柱崩壊問題：Zhou et al.(1999)</li>
+							<li>まとめ</li>
+						</ol>
+					</section>
+					
+					<section>
+						<h3>数値流体力学の応用範囲</h3>
+						<ul style="font-size: 150%">
+							<li>理学的な理論検証</li>
+							<li>工学的な現象解明</li>
+							<li>実務ものづくりの設計などへの応用（<strong>CAE</strong>）</li>
+						</ul>
+						<p style="font-size: 150%">本研究：CAEにおける数値流体力学を想定</p>
+					</section>
+
+					<section>
+						<h3>数値流体でCAEしたい！となった時</h3>
+						<dl style="font-size: 200%">
+							<dt>どんな方法？</dt>
+							<dd><ul>
+								<li>格子法</li>
+								<li>粒子法</li>
+							</ul></dd>
+							<dt>どこから入手？</dt>
+							<dd><ul>
+								<li>商用</li>
+								<li>オープンCAE(FLOSS)</li>
+							</ul></dd>
+					</section>
+					<section>
+						<h3>格子法</h3>
+						<p style="font-size: 150%">従来、よく用いられてきた</p>
+						<div>
+							<figure style="float: right; width: 45%">
+								<img src="img/grid.png" />
+								<figcaption><small>CC-BY-SA 3.0 Unported by Zureks</small></figcaption>
+							</figure>
+							<ul style="float: left; width: 45%">
+								<li>相互作用の相手が初期に固定</li>
+								<li>計算点が空間に固定されていることが多い（<strong>オイラー法</strong>）</li>
+								<li>研究事例が豊富</li>
+								<li>計算負荷は低い</li>
+								<li>数学的展開が容易</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<h3>粒子法</h3>
+						<p style="font-size: 150%">近年、用いられるようになってきた</p>
+						<div>
+							<figure style="float: right; width: 45%">
+								<img src="img/particle.png" />
+							</figure>
+							<ul style="float: left; width: 45%">
+								<li>相互作用の相手が毎回変化</li>
+								<li>計算点が空間に固定されていない（<strong>ラグランジュ法</strong>）</li>
+								<li>移流項による誤差拡大がない</li>
+								<li>境界の大変形に追従しやすい</li>
+								<li>一般的に計算負荷は高い</li>
+							</ul>
+						</div>
+					</section>
+					
+					<section>
+						<h3>粒子法をCAEで使いたい場合</h3>
+						<dl>
+							<dt style="font-size: 150%">自作ソルバー</dt>
+							<dd>一部の熟練者でないと困難なため避けたい</dd>
+							<dt style="font-size: 150%">商用ソルバー</dt>
+							<dd><ul>
+								<li><a href="https://www.particleworks.com/">Particleworks</a>（プロメテック・ソフトウェア）</li>
+								<li><a href="https://ftr.co.jp/solution/software/ryujin/">MPS-RYUJIN</a>（富士テクニカルリサーチ）</li>
+								<li><a href="https://www.3ds.com/products-services/simulia/products/abaqus/abaqusexplicit/">Abaqus/Explicit</a> (Dassault Systmes)</li>
+							</ul></dd>
+							<dt style="font-size: 150%">オープンCAE (FLOSS)</dt>
+							<dd><ul>
+								<li><a href="https://dual.sphysics.org/">DualSPHysics</a></li>
+								<li><a href="https://openmps.github.io/">OpenMps</a></li>
+							</ul></dd>
+						</dl>
+					</section>
+
+					<section>
+						<h3>オープンCAEとは</h3>
+						<p style="font-size: 150%"><a href="http://www.opencae.or.jp/">オープンCAE学会</a>などが推進</p style="font-size: 150%">
+						<ul style="font-size: 150%">
+							<li>Free/Libre Open Source Software (FLOSS)でCAEする</li>
+							<li>ソフトウェア開発を<br />利用者コミュニティーも一緒に進める</li>
+						</ul>
+					</section>
+					
+					<section>
+						<h3>商用 vs オープンCAE</h3>
+						<table>
+							<thead>
+								<tr><th>種類</th><th>商用</th><th>オープンCAE(FLOSS)</th></tr>
+							</thead>
+							<tbody>
+								<tr><th>サポート</th><td>手厚い</td><td>あまりない</td></tr>
+								<tr><th>費用</th><td>高い</td><td>無料</td></tr>
+								<tr><th>機能追加・改修</th><td>開発の気分</td><td>自分たちも可能</td></tr>
+								<tr><th>コード検証</th><td>開発を全信頼</td><td>自分で可能</td></tr>
+								<tr><th>妥当性確認</th><td>開発側が責任</td><td>可能（だが少ない）</td></tr>
+							</tbody>
+						</table>
+					</section>
+
+					<section>
+						<h3>本研究の目標</h3>
+						<ul style="font-size: 150%">
+							<li>粒子法のための妥当性確認試験を<strong>整備</strong></li>
+							<li>粒子法FLOSSに対して妥当性確認を<strong>実施</strong></li>
+							<li>（結果を元にして、事業化の参考）</li>
+						</ul>
+					</section>
+
+					<section>
+						<h3>本研究の動機</h3>
+						<figure style="width: 70%">
+							<img src="css/theme/logo.png" />
+						</figure>
+						<p><strong>顧客のソフトウェアを高速化</strong>することが主力事業</p>
+						<p>（組み込みSoCからスパコンまで、応用分野を問わず）</p>
+						<ol>
+							<li>高速化の知見を活かした<strong>自社事業</strong>ができないか？</li>
+							<li>計算負荷が高い粒子法を題材にすると良さそう</li>
+							<li>応用分野は海岸・海洋工学（<strong>土木工学</strong>）が良さそう</li>
+							<li><strong>元にする実装はどれがいいか？</strong>を知りたい</li>
+						</ol>
+					</section>
+
+					<section>
+						<h3>対象にしたいソフトウェアの特徴</h3>
+						<ul style="font-size: 150%">
+							<li>海岸・海洋工学向きである</li>
+							<li>≒ニュートン流体の重力下における自由表面大変形を伴う非圧縮性流れが解ける</li>
+							<li>FLOSSである</li>
+							<li>既往研究が極端に少なくない</li>
+						</ul>
+						<p style="font-size: 200%">→<strong>DualSPHysics</strong>と<strong>OpenMPS</strong></p>
+					</section>
+
+					<section>
+						<h3>実施したいベンチマークの特徴</h3>
+						<ul style="font-size: 150%">
+							<li>海岸・海洋工学で重要な物理量を計測する</li>
+							<li>≒水深・波圧など</li>
+							<li>（まずは）あまり大規模・複雑ではない</li>
+							<li>≒基礎的な理論・実験など</li>
+						</ul>
+						<p style="font-size: 200%">→<strong>中心重力問題</strong>と<strong>水柱崩壊問題</strong></p>
+					</section>
+				</section>
+
+				<section>
+					<h2>計算手法</h2>
+					<section>
+						<h3>目次</h3>
+						<ol class="toc">
+							<li>概要</li>
+							<li>背景・目的</li>
+							<li class="recent">計算手法</li>
+							<li>中心重力問題(DualSPHysics)</li>
+							<li>中心重力問題(OpenMps)</li>
+							<li>水柱崩壊問題：Oka&amp;Koshizuka(1996)</li>
+							<li>水柱崩壊問題：Zhou et al.(1999)</li>
+							<li>まとめ</li>
+						</ol>
+					</section>
+
+					<section>
+						<h3>対象ソフトウェア</h3>
+						<dl>
+							<dt style="font-size: 150%"><a href="https://dual.sphysics.org/">DualSPHysics</a></dt>
+							<dd><ul>
+								<li>既に多くの利用事例がある</li>
+								<li>CUDA(GPU)対応されている（が、高速化が不十分）</li>
+								<li><strong>弱圧縮SPH法</strong>なので、精度が心配</li>
+							</ul></dd>
+							<dt style="font-size: 150%"><a href="https://openmps.github.io/">OpenMps</a></dt>
+							<dd><ul>
+								<li>利用者が少ない（ほぼ皆無）</li>
+								<li>素直なC++なので分かりやすい</li>
+								<li><strong>高精度MPS法</strong>が実装されているので、計算負荷が高そう</li>
+							</ul></dd>
+						</dl>
+						<p>時間の都合上、詳細は割愛<br />（概要の第2章を参照してください）</p>
+					</section>
+				</section>
+
+				<section>
+					<h2>中心重力問題(DualSPHysics)</h2>
+					<section>
+						<h3>目次</h3>
+						<ol class="toc">
+							<li>概要</li>
+							<li>背景・目的</li>
+							<li>計算手法</li>
+							<li class="recent">中心重力問題(DualSPHysics)</li>
+							<li>中心重力問題(OpenMps)</li>
+							<li>水柱崩壊問題：Oka&amp;Koshizuka(1996)</li>
+							<li>水柱崩壊問題：Zhou et al.(1999)</li>
+							<li>まとめ</li>
+						</ol>
+					</section>
+
+					<section>
+						<h3>中心重力問題とは？</h3>
+						<div>
+							<figure style="float: left; width: 45%">
+								<img src="img/centralgravity.svg" />
+								<figcaption>Fig.1</figcaption>
+							</figure>
+							<ul style="float: right; width: 45%">
+								<li>重力が<strong>原点向き</strong>\[
+									\mathbf{g} \left( \mathbf{x} \right) = -g_z \frac{\mathbf{x}}{\left| \mathbf{x} \right|}
+								\]</li>
+								<li>半径Rで定常になる</li>
+								<li>原点から半径方向に静水圧になる\[
+									p = \rho g_z \left( R - \left| \mathbf{x} \right| \right)
+								\]</li>
+							</ul>
+						</div>
+						<p style="clear: both"><strong>壁面境界が不要</strong>なので純粋な流体ソルバーの確認向き</p>
+					</section>
+
+					<section>
+						<h3>DualSPHysicsの結果</h3>
+						<figure>
+							<video src="img/comp_clip2.mp4" controls="1" loop="1" />
+						</figure>
+						<p>時間が経過すると自由表面が膨張？し、圧力が低下</p>
+					</section>
+
+					<section>
+						<h3>原因</h3>
+						<p>駆動力（圧力）が依存している<strong>密度計算法</strong>の違いに起因</p>
+						<dl>
+							<dt>通常のSPH法（カーネル和型）</dt>
+							<dd>\[\rho_i = m \sum_{j \neq i} W_{ji}\]</dd>
+							<dt>DualSPHysics/WCSPH（時間発展型）</dt>
+							<dd>\[\frac{\mathrm{D} \rho }{\mathrm{D} t} = m \sum_{j \neq i} \left( \mathbf{u}_j - \mathbf{u}_i \right) \cdot \mathbf{\nabla} W_{ji}\]</dd>
+						</dl>
+						<p>僅かな数値誤差により拡大している</p>
+					</section>
+					
+					<section>
+						<h3>水深の時間発展</h3>
+						<figure style="width: 80%">
+							<img src="img/time-radius.svg" />
+							<figcaption>Fig.5</figcaption>
+						</figure>
+						<p>※DualSPHysicsではなく自作の簡易実装で試した結果</p>
+					</section>
+
+					<section>
+						<h3>結論</h3>
+						<ul style="font-size: 150%">
+							<li>DualSPHysicsは静水圧問題が解けないように見える</li>
+							<li>→浮体問題などで<strong>致命的</strong></li>
+							<li>解決にはDualSPHysicsの修正が必要</li>
+							<li>→高難易度<br />（<strong>コードがあまりきれいではない</strong>ので）</li>
+						</ul>
+						<p ubuntu ppa>∴以降は、DualSPHysicsの妥当性確認は実施しない</p>
+					</section>
+				</section>
+
+				<section>
+					<h2>中心重力問題(OpenMps)</h2>
+					<section>
+						<h3>目次</h3>
+						<ol class="toc">
+							<li>概要</li>
+							<li>背景・目的</li>
+							<li>計算手法</li>
+							<li>中心重力問題(DualSPHysics)</li>
+							<li class="recent">中心重力問題(OpenMps)</li>
+							<li>水柱崩壊問題：Oka&amp;Koshizuka(1996)</li>
+							<li>水柱崩壊問題：Zhou et al.(1999)</li>
+							<li>まとめ</li>
+						</ol>
+					</section>
+
+					<section>
+						<h3>OpenMPSでの結果</h3>
+						<figure style="width: 100%">
+							<video src="img/central_2f1313e.mp4" controls="1" loop="1" />
+						</figure>
+						<p>自由表面の振動が増大？</p>
+					</section>
+
+					<section>
+						<h3>原因</h3>
+						<p>勾配修正法（GC法、高精度粒子法の1つ）が原因</p>
+						<ul>
+							<li>\[\mathbf{\nabla} \phi_i = \frac{D}{n_0} \sum_{j \neq i} \frac{\phi_j - \phi_i}{\left| \mathbf{r}_{ji} \right|} \frac{{C_i}^{-1} \mathbf{r}_{ji}}{\left| \mathbf{r}_{ji} \right|} w_{ji} \]</li>
+							<li>\[C_i = \frac{D}{n_0} \sum_{j \neq i} \frac{\mathbf{r}_{ji} \otimes \mathbf{r}_{ji}}{{\left| \mathbf{r}_{ji} \right|}^2} w_{ji} \]</li>
+						</ul>
+						<p>$C_i$が異なるため、i-jの相互作用力が非対称</p>
+					</section>
+
+					<section>
+						<h3>GC法なし</h3>
+						<figure style="width: 65%">
+							<video src="img/cental_hr.mp4" controls="1" loop="1" />
+						</figure>
+					</section>
+
+					<section>
+						<h3>GC法なし（圧力）</h3>
+						<figure style="width: 80%">
+							<video src="img/pressure_hr.mp4" controls="1" loop="1" />
+						</figure>
+					</section>
+
+					<section>
+						<h3>結論</h3>
+						<ul style="font-size: 150%">
+							<li>GC法のせいで静水圧にならない</li>
+							<li>理由は、実装か理論かはまだ区別できていない</li>
+						</ul>
+						<p style="font-size: 150%">以降ではGC法を切って続行した</p>
+					</section>
+				</section>
+
+				<section>
+					<h2>水柱崩壊問題：Oka&amp;Koshizuka(1996)</h2>
+					<section>
+						<h3>目次</h3>
+						<ol class="toc">
+							<li>概要</li>
+							<li>背景・目的</li>
+							<li>計算手法</li>
+							<li>中心重力問題(DualSPHysics)</li>
+							<li>中心重力問題(OpenMps)</li>
+							<li class="recent">水柱崩壊問題：Oka&amp;Koshizuka(1996)</li>
+							<li>水柱崩壊問題：Zhou et al.(1999)</li>
+							<li>まとめ</li>
+						</ol>
+					</section>
+
+					<section>
+						<h3>Oka&amp;Koshizuka(1996)の実験</h3>
+						<p>水柱崩壊（ダムブレーク）問題</p>
+						<figure style="width: 75%">
+							<img src="img/dambreak1.svg" />
+							<figcaption>Fig.2</figcaption>
+						</figure>
+						<p>原始MPS法での妥当性確認に使用されたもの</p>
+					</section>
+
+					<section>
+						<h3>計算結果</h3>
+						<figure style="width: 60%">
+							<video src="img/dumbreak_koshizuka_oka1996.mp4" controls="1" loop="1" />
+						</figure>
+					</section>
+
+					<section>
+						<h3>崩壊波先端の位置</h3>
+						<figure style="width: 75%">
+							<img src="img/koshizuka_oka_1996.svg" />
+						</figure>
+					</section>
+					
+					<section>
+						<h3>結論</h3>
+						<ul style="font-size: 150%">
+							<li>波先端位置は実験に近い結果</li>
+							<li>≒自由表面の形状は良好に再現</li>
+							<li>原始MPS法に比べて良い結果</li>
+							<li>→高精度粒子法による改善</li>
+						</ul>
+					</section>
+				</section>
+
+				<section>
+					<h2>水柱崩壊問題：Zhou et al.(1999)</h2>
+					<section>
+						<h3>目次</h3>
+						<ol class="toc">
+							<li>概要</li>
+							<li>背景・目的</li>
+							<li>計算手法</li>
+							<li>中心重力問題(DualSPHysics)</li>
+							<li>中心重力問題(OpenMps)</li>
+							<li>水柱崩壊問題：Oka&amp;Koshizuka(1996)</li>
+							<li class="recent">水柱崩壊問題：Zhou et al.(1999)</li>
+							<li>まとめ</li>
+						</ol>
+					</section>
+
+					<section>
+						<h3>Zhou et al.(1999)の実験</h3>
+						<p>水柱崩壊（ダムブレーク）問題の別バージョン</p>
+						<figure style="width: 75%">
+							<img src="img/dambreak2.svg" />
+							<figcaption>Fig.3</figcaption>
+						</figure>
+						<p>定点の水深(H1, H2)・圧力(P2)を比較できる</p>
+					</section>
+
+					<section>
+						<h3>計算結果</h3>
+						<figure style="width: 100%">
+							<video src="img/zhouetal1999_2mm.mp4" controls="1" loop="1" />
+						</figure>
+					</section>
+
+					<section>
+						<h3>圧力表示</h3>
+						<figure style="width: 100%">
+							<img src="img/pressure.png" />
+						</figure>
+						<p>圧力の擾乱がひどく、まともに評価できていない！</p>
+					</section>
+
+					<section>
+						<h3>原因と解決策</h3>
+						<ol style="font-size: 150%">
+							<li>粒子が移動する</li>
+							<li>わずかに空隙が発生する</li>
+							<li>自由表面だと判定される</li>
+							<li>圧力がゼロの境界条件が設定される</li>
+						</ol>
+						<p style="font-size: 150%">空隙を埋める<strong>SPP法</strong>を導入すれば解決するはず</p>
+					</section>
+
+					<section>
+						<h3>圧力表示（SPP法あり）</h3>
+						<figure style="width: 100%">
+							<video src="img/zhouetal1999_spp.mp4" controls="1" loop="1" />
+						</figure>
+					</section>
+
+					<section>
+						<h3>圧力(P2)時系列</h3>
+						<figure style="width: 75%">
+							<img src="img/zhouetal1999_p2_2mm.svg" />
+						</figure>
+					</section>
+
+					<section>
+						<h3>水深(H2)時系列</h3>
+						<figure style="width: 75%">
+							<img src="img/zhouetal1999_h2_2mm.svg" />
+						</figure>
+					</section>
+
+					<section>
+						<h3>水深(H1)時系列</h3>
+						<figure style="width: 75%">
+							<img src="img/zhouetal1999_h1_2mm.svg" />
+						</figure>
+					</section>
+					
+					<section>
+						<h3>結論</h3>
+						<ul style="font-size: 150%">
+							<li>SPP法を導入しないと、圧力擾乱が酷く使い物にならなかった</li>
+							<li>導入後も多少圧力擾乱があるため、引き続き改善を試みたい</li>
+						</ul>
+					</section>
+				</section>
+
+				<!-- 最終スライド -->
+				<section>
+					<!-- 最終スライドのh2は表示されません。 -->
+					<h2>まとめ</h2>
+					<section>
+						<h3>目次</h3>
+						<ol class="toc">
+							<li>概要</li>
+							<li>背景・目的</li>
+							<li>計算手法</li>
+							<li>中心重力問題(DualSPHysics)</li>
+							<li>中心重力問題(OpenMps)</li>
+							<li>水柱崩壊問題：Oka&amp;Koshizuka(1996)</li>
+							<li>水柱崩壊問題：Zhou et al.(1999)</li>
+							<li class="recent">まとめ</li>
+						</ol>
+					</section>
+						
+					<section>
+						<h3>まとめ</h3>
+						<ol>
+							<li><p style="font-size: 150%">粒子法FLOSSの妥当性確認試験を整備した</p><ul>
+								<li>中心重力問題</li>
+								<li>水柱崩壊問題：Oka&amp;Koshizuka(1996)</li>
+								<li>水柱崩壊問題：Zhou et al.(1999)</li>
+							</ul></li>
+							<li><p style="font-size: 150%">DualSPHysicsとOpenMpsに対して妥当性確認をした</p><ul>
+								<li>DualSPHysicsでは静水圧問題が解けなかった</li>
+								<li>OpenMpsのGC法には問題があった</li>
+								<li>OpenMpsにSPP法を導入することで圧力擾乱が抑制できた</li>
+							</ul></li>
+						</ol>
+					</section>
+						
+					<section>
+						<h3>今後の課題</h3>
+						<ul style="font-size: 150%">
+							<li>DualSPHysicsにカーネル和型密度計算の実装</li>
+							<li>OpenMpsのGC法の問題改善</li>
+							<li>より現実的なベンチマークの追加<ul>
+								<li>強制液面振動（スロッシング）</li>
+								<li>造波</li>
+								<li>消波</li>
+								<li>などなど・・・</li>
+							</ul>
+							</li>
+						</ul>
+					</section>
+					
+					<section>
+						<h3 id="thanks">return 0;</h3>
+					</section>
+				</section>
+			</div>
+		</div>
+
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+				slideNumber: "h.v",
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				width: 960,
+				height: 720,
+				margin: 0,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true },
+					{ src: 'plugin/math/math.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
